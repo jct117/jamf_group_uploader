@@ -1,0 +1,17 @@
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #ddd;
+}
+
+.back-button {
+    background-color: #f0f0f0;
+    color: #333;
+}

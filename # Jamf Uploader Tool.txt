@@ -1,0 +1,10 @@
+# Jamf Uploader Tool 
+
+# Scope will have a login and upload URL
+# Manage static groups
+# Create Static group
+# Upload computers to Static group
+# Possible to add by email address and multiple computer assigned to that user
+
+# electron app
+
