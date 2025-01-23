@@ -4,12 +4,21 @@ import GroupSelection from './components/GroupSelection.jsx';
 import ActionSelection from './components/ActionSelection.jsx';
 import FileUpload from './components/FileUpload.jsx';
 import ReviewFile from './components/ReviewFile.jsx';
+import { CSVProvider } from './context/CSVContext'; // Import the CSVProvider
 
 function App() {
     const [token, setToken] = useState(null); // Store the token
     const [currentScreen, setCurrentScreen] = useState('login'); // Track the current screen
-    const [uploadedFile, setUploadedFile] = useState(null); // Store the uploaded file
+    const [uploadedData, setUploadedData] = useState(null); // Store the uploaded CSV data
+    const [groupId, setGroupId] = useState(''); // Store the Group ID
     const [error, setError] = useState(null);
+
+    const handleFileUpload = (data, groupId) => {
+        console.log('CSV Data and Group ID received:', data, groupId);
+        setUploadedData(data); // Save CSV data
+        setGroupId(groupId); // Save Group ID
+        setCurrentScreen('reviewFile'); // Navigate to ReviewFile
+    };
 
     // Check if the token is valid
     const isTokenValid = async () => {
@@ -31,13 +40,6 @@ function App() {
 
     const handleBack = (previousScreen) => {
         setCurrentScreen(previousScreen);
-    };
-
-    // Handle file upload
-    const handleFileUpload = (file) => {
-        console.log('File received in App.jsx:', file); // Debug
-        setUploadedFile(file); // Store the uploaded file
-        setCurrentScreen('reviewFile'); // Navigate to ReviewFile
     };
 
     useEffect(() => {
@@ -80,21 +82,26 @@ function App() {
                 );
             case 'fileUpload':
                 return (
-                    <FileUpload
-                        onUpload={handleFileUpload} // Pass the file upload handler
-                        onBack={() => handleBack('actionSelection')}
-                    />
+                    <CSVProvider>
+                        <FileUpload
+                            onUpload={handleFileUpload}
+                            onBack={() => handleBack('actionSelection')}
+                        />
+                    </CSVProvider>
                 );
             case 'reviewFile':
                 return (
-                    <ReviewFile
-                        file={uploadedFile} // Pass the uploaded file
-                        onSubmit={() => {
-                            console.log('Submission triggered with file:', uploadedFile); // Debug
-                            alert('Submission complete!'); // Replace with actual submission logic
-                        }}
-                        onBack={() => handleBack('fileUpload')}
-                    />
+                    <CSVProvider>
+                        <ReviewFile
+                            data={uploadedData} // Pass CSV data
+                            groupId={groupId} // Pass Group ID
+                            onSubmit={() => {
+                                console.log('Submission triggered with file:', uploadedData); // Debug
+                                alert('Submission complete!'); // Replace with actual submission logic
+                            }}
+                            onBack={() => handleBack('fileUpload')}
+                        />
+                    </CSVProvider>
                 );
             default:
                 return null;

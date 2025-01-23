@@ -9,7 +9,7 @@ const GroupSelection = ({ onSelectGroup, onBack }) => {
             {/* <button onClick={() => onSelectGroup('User')} style={{ marginLeft: '10px' }}>
                 User Groups
             </button> */}
-            <button onClick={onBack} style={{ marginTop: '20px' }}>Back</button>
+            {/* <button onClick={onBack} style={{ marginTop: '20px' }}>Back</button> */}
         </div>
     );
 };
