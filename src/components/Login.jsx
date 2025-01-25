@@ -19,8 +19,8 @@ const Login = ({ onAuthenticated }) => {
     
             if (response.success) {
                 const { token } = response;
-                console.log('Token fetched successfully:', token); // Debug
-                onAuthenticated(token); // Pass token to App.jsx
+                // console.log('Token fetched successfully:', token); // Debug
+                onAuthenticated({ token, siteUrl }); // Pass token and siteUrl to App.jsx
                 setError(''); // Clear errors
             } else {
                 console.error('Login failed with error:', response.error); // Debug
@@ -34,7 +34,7 @@ const Login = ({ onAuthenticated }) => {
     
     const handleSubmit = (e) => {
         e.preventDefault(); // Prevent form from refreshing the page
-        console.log('Login form submitted.'); // Debug
+        // console.log('Login form submitted.'); // Debug
     
         if (!siteUrl || !username || !password) {
             setError('All fields are required.');

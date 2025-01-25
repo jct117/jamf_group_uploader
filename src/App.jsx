@@ -9,6 +9,7 @@ import { CSVProvider } from './context/CSVContext'; // Import the CSVProvider
 function App() {
     const [token, setToken] = useState(null); // Store the token
     const [currentScreen, setCurrentScreen] = useState('login'); // Track the current screen
+    const [siteUrl, setSiteUrl] = useState(''); // Store the site URL (Add this line)
     const [uploadedData, setUploadedData] = useState(null); // Store the uploaded CSV data
     const [groupId, setGroupId] = useState(''); // Store the Group ID
     const [error, setError] = useState(null);
@@ -59,13 +60,13 @@ function App() {
             case 'login':
                 return (
                     <Login
-                        onAuthenticated={(token) => {
-                            // console.log('Token received in App.jsx:', token); // Debug  
-                            setToken(token);    
-                            setCurrentScreen('groupSelection');
-                        }}
-                    />
-                );
+                    onAuthenticated={({ token, siteUrl }) => {
+                        setToken(token);
+                        setSiteUrl(siteUrl);
+                        setCurrentScreen('groupSelection');
+                    }}
+                />
+            );
             case 'groupSelection':
                 return (
                     <GroupSelection
@@ -80,29 +81,30 @@ function App() {
                         onBack={() => handleBack('groupSelection')}
                     />
                 );
-            case 'fileUpload':
-                return (
-                    <CSVProvider>
-                        <FileUpload
-                            onUpload={handleFileUpload}
-                            onBack={() => handleBack('actionSelection')}
-                        />
-                    </CSVProvider>
-                );
-            case 'reviewFile':
-                return (
-                    <CSVProvider>
-                        <ReviewFile
-                            data={uploadedData} // Pass CSV data
-                            groupId={groupId} // Pass Group ID
-                            onSubmit={() => {
-                                console.log('Submission triggered with file:', uploadedData); // Debug
-                                alert('Submission complete!'); // Replace with actual submission logic
-                            }}
-                            onBack={() => handleBack('fileUpload')}
-                        />
-                    </CSVProvider>
-                );
+                case 'fileUpload':
+                    return (
+                        <CSVProvider>
+                            <FileUpload
+                                onNext={() => setCurrentScreen('reviewFile')} // Pass onNext correctly
+                                onBack={() => setCurrentScreen('actionSelection')}
+                            />
+                        </CSVProvider>
+                    );
+                case 'reviewFile':
+                    return (
+                        <CSVProvider>
+                            <ReviewFile
+                                data={uploadedData}
+                                groupId={groupId}
+                                siteUrl={siteUrl} // Pass siteUrl
+                                token={token} // Pass token
+                                onSubmit={() => {
+                                    alert('Submission complete!');
+                                }}
+                                onBack={() => setCurrentScreen('fileUpload')}
+                            />
+                        </CSVProvider>
+                    );
             default:
                 return null;
         }
