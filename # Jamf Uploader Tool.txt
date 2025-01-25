@@ -6,5 +6,11 @@
 # Upload computers to Static group
 # Possible to add by email address and multiple computer assigned to that user
 
-# electron app
+## TODO ##
+-remember me login 
+-review group and csv upload page
+-submissions
+-sticky document upload
+-user group upload
+
 

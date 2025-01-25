@@ -1,100 +1,70 @@
-import React, { useState, useEffect } from 'react';
-import Papa from 'papaparse';
+import React, { useContext, useEffect, useState } from 'react';
+import { CSVContext } from '../context/CSVContext';
 
-const ReviewFile = ({ file, onSubmit, onBack }) => {
-    const [data, setData] = useState([]);
+const ReviewFile = ({ onSubmit, onBack }) => {
+    const { csvData } = useContext(CSVContext); // Access CSV data and Group ID from context
+    const [groupName, setGroupName] = useState('');
+    const [error, setError] = useState('');
 
+    // Fetch group name using Group ID
     useEffect(() => {
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const text = e.target.result;
-                const parsedData = Papa.parse(text, {
-                    header: true, // Use the first row as headers
-                    skipEmptyLines: true, // Skip empty rows
+        const fetchGroupName = async () => {
+            try {
+                const response = await fetch(`https://your-jamf-instance/uapi/v1/static-groups/computers/${csvData.groupId}`, {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Bearer YOUR_TOKEN_HERE`,
+                        Accept: 'application/json',
+                    },
                 });
-                setData(parsedData.data); // Store parsed data as an array of objects
-            };
-            reader.readAsText(file);
-        }
-    }, [file]);
+                if (response.ok) {
+                    const result = await response.json();
+                    setGroupName(result.name || 'Unknown Group');
+                } else {
+                    setError('Failed to fetch group name.');
+                }
+            } catch (err) {
+                console.error('Error fetching group name:', err);
+                setError('Error fetching group name.');
+            }
+        };
+
+        fetchGroupName();
+    }, [csvData.groupId]);
 
     const handleSubmit = async () => {
         try {
-            const response = await fetch('https://your-jamf-instance/api/v1/resource', {
+            const payload = {
+                serial_numbers: csvData.data.map((item) => item.serial_number),
+            };
+            const response = await fetch(`https://your-jamf-instance/uapi/v1/static-groups/computers/${csvData.groupId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your dynamic token
+                    Authorization: `Bearer YOUR_TOKEN_HERE`,
                 },
-                body: JSON.stringify(data), // Send the parsed data as the body
+                body: JSON.stringify(payload),
             });
-            const result = await response.json();
-            console.log('Response:', result);
-            alert('File submitted successfully!');
-        } catch (error) {
-            console.error('Error submitting data:', error);
-            alert('Error occurred while submitting the data.');
+            if (response.ok) {
+                alert('Group updated successfully!');
+                onSubmit();
+            } else {
+                setError('Failed to update the group.');
+            }
+        } catch (err) {
+            console.error('Error submitting data:', err);
+            setError('Error occurred while updating the group.');
         }
     };
 
     return (
-        <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            <h2>Review Uploaded File</h2>
-            <div style={{ maxHeight: '400px', overflowY: 'scroll', margin: '20px auto', width: '80%' }}>
-                {data.length > 0 ? (
-                    <table border="1" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr>
-                                {Object.keys(data[0]).map((key) => (
-                                    <th key={key} style={{ padding: '8px', background: '#f4f4f4' }}>{key}</th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data.map((row, index) => (
-                                <tr key={index}>
-                                    {Object.values(row).map((value, idx) => (
-                                        <td key={idx} style={{ padding: '8px', textAlign: 'center' }}>
-                                            {value || 'N/A'}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                ) : (
-                    <p>No data to display. Please upload a valid file.</p>
-                )}
-            </div>
-            <button
-                onClick={handleSubmit}
-                style={{
-                    marginTop: '20px',
-                    padding: '10px 20px',
-                    backgroundColor: '#4caf50',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                }}
-            >
-                Submit
-            </button>
-            <button
-                onClick={onBack}
-                style={{
-                    marginTop: '20px',
-                    padding: '10px 20px',
-                    backgroundColor: '#f44336',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                }}
-            >
-                Back
-            </button>
+        <div>
+            <h2>Review Uploaded Data</h2>
+            <p>Group ID: {csvData.groupId}</p>
+            <p>Group Name: {groupName}</p>
+            {/* Add CSV Data Table */}
+            <button onClick={handleSubmit}>Submit</button>
+            <button onClick={onBack}>Back</button>
         </div>
     );
 };

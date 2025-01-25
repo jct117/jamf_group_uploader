@@ -55,7 +55,7 @@ const Login = ({ onAuthenticated }) => {
                         <input
                             type="text"
                             id="siteUrl"
-                            placeholder="https://yourserver.jamfcloud.com"
+                            placeholder="https://jamfcloud.com"
                             value={siteUrl}
                             onChange={(e) => setSiteUrl(e.target.value)}
                             required

@@ -53,14 +53,14 @@ function App() {
         checkToken();
     }, [currentScreen]);
 
-    // Render the appropriate screen
+    // Navigation
     const renderScreen = () => {
         switch (currentScreen) {
             case 'login':
                 return (
                     <Login
                         onAuthenticated={(token) => {
-                            console.log('Token received in App.jsx:', token); // Debug  
+                            // console.log('Token received in App.jsx:', token); // Debug  
                             setToken(token);    
                             setCurrentScreen('groupSelection');
                         }}
