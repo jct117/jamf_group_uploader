@@ -2,12 +2,15 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const axios = require('axios');
 const path = require('path');
 require('dotenv').config(); // Load .env variables
+let currentToken = null;
+let apiUrl = null; // Store siteUrl
 
 let mainWindow;
 let sessionData = {
     token: null,
     expiration: null,
     loginTime: null,
+    apiUrl: null,
 };
 
 app.on('ready', () => {
@@ -43,6 +46,7 @@ const getBearerToken = async ({ siteUrl, username, password }) => {
             token,
             expiration: expiresIn,
             loginTime: Date.now(),
+            apiUrl,
         };
 
         return { success: true, token, expiresIn };
@@ -67,9 +71,9 @@ const checkTokenExpiration = () => {
 };
 
 // Invalidate the current token
-const invalidateToken = async (apiUrl) => {
+const invalidateToken = async () => {
     try {
-        const response = await axios.post(`${apiUrl}/api/v1/auth/invalidate-token`, {}, {
+        const response = await axios.post(`${sessionData.apiUrl}/api/v1/auth/invalidate-token`, {}, {
             headers: { Authorization: `Bearer ${sessionData.token}` },
         });
 
@@ -100,7 +104,8 @@ ipcMain.handle('login', async (_, { siteUrl, username, password }) => {
         sessionData = {
             token,
             expiration: expiresIn,
-            loginTime: Math.floor(new Date().getTime() / 1000), // Current time in seconds
+            loginTime: Math.floor(new Date().getTime() / 1000),
+            apiUrl: siteUrl, // Store the siteUrl here
         };
 
         console.log('Session data after login:', sessionData); // Debug
@@ -111,7 +116,6 @@ ipcMain.handle('login', async (_, { siteUrl, username, password }) => {
     }
 });
 
-// ipcMain.handle('check-session', () => checkTokenExpiration());
 ipcMain.handle('check-session', () => {
     const nowEpochUTC = Math.floor(new Date().getTime() / 1000);
 
@@ -126,7 +130,19 @@ ipcMain.handle('check-session', () => {
     }
 });
 
+ipcMain.handle('get-api-url', async () => {
+    console.log('Returning API URL:', sessionData.apiUrl); // Debug log
+    return sessionData.apiUrl || ''; // Return stored siteUrl
+});
+
 ipcMain.handle('invalidate-token', async (_, apiUrl) => await invalidateToken(apiUrl));
+
+// Capture the token and site URL from Login.jsx
+ipcMain.on('save-token', (event, { token, siteUrl }) => {
+    currentToken = token;
+    apiUrl = siteUrl; // Save siteUrl globally
+    console.log('Token and site URL saved:', { token, siteUrl }); // Debug log
+});
 
 ipcMain.handle('renew-token', async (_, { apiUrl }) => {
     if (!sessionData.token) {
@@ -140,4 +156,8 @@ ipcMain.handle('renew-token', async (_, { apiUrl }) => {
     } else {
         return { success: true, token: sessionData.token, expiresIn: sessionData.expiration };
     }
+});
+
+app.on('before-quit', async () => {
+    await invalidateToken();
 });

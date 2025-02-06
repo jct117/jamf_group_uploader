@@ -14,12 +14,12 @@ function App() {
     const [groupId, setGroupId] = useState(''); // Store the Group ID
     const [error, setError] = useState(null);
 
-    const handleFileUpload = (data, groupId) => {
-        console.log('CSV Data and Group ID received:', data, groupId);
-        setUploadedData(data); // Save CSV data
-        setGroupId(groupId); // Save Group ID
-        setCurrentScreen('reviewFile'); // Navigate to ReviewFile
-    };
+    // const handleFileUpload = (data, groupId) => {
+    //     console.log('CSV Data and Group ID received:', data, groupId);
+    //     setUploadedData(data); // Save CSV data
+    //     setGroupId(groupId); // Save Group ID
+    //     setCurrentScreen('reviewFile'); // Navigate to ReviewFile
+    // };
 
     // Check if the token is valid
     const isTokenValid = async () => {
@@ -81,39 +81,35 @@ function App() {
                         onBack={() => handleBack('groupSelection')}
                     />
                 );
-                case 'fileUpload':
-                    return (
-                        <CSVProvider>
-                            <FileUpload
-                                onNext={() => setCurrentScreen('reviewFile')} // Pass onNext correctly
-                                onBack={() => setCurrentScreen('actionSelection')}
-                            />
-                        </CSVProvider>
-                    );
-                case 'reviewFile':
-                    return (
-                        <CSVProvider>
-                            <ReviewFile
-                                data={uploadedData}
-                                groupId={groupId}
-                                siteUrl={siteUrl} // Pass siteUrl
-                                token={token} // Pass token
-                                onSubmit={() => {
-                                    alert('Submission complete!');
-                                }}
-                                onBack={() => setCurrentScreen('fileUpload')}
-                            />
-                        </CSVProvider>
-                    );
+            case 'fileUpload':
+                return (
+                    <FileUpload
+                            onNext={() => setCurrentScreen('reviewFile')} // Pass onNext correctly
+                            onBack={() => setCurrentScreen('actionSelection')}
+                        />
+                );
+            case 'reviewFile':
+                return (
+                    <ReviewFile
+                        data={uploadedData}
+                        groupId={groupId}
+                        siteUrl={siteUrl} // Pass siteUrl
+                        token={token} // Pass token
+                        onSubmit={() => {
+                            alert('Submission complete!');
+                        }}
+                        onBack={() => setCurrentScreen('fileUpload')}
+                    />
+                );
             default:
                 return null;
         }
     };
 
     return (
-        <div>
-            {renderScreen()}
-        </div>
+        <CSVProvider>
+            {renderScreen()} {/* Wrap the entire app */}
+        </CSVProvider>
     );
 }
 

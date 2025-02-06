@@ -13,4 +13,10 @@ contextBridge.exposeInMainWorld('api', {
     fetchGroups: () => ipcRenderer.invoke('fetch-groups'),
     fetchActions: (groupId) => ipcRenderer.invoke('fetch-actions', groupId),
     submitAction: (action) => ipcRenderer.invoke('submit-action', action),
+    send: (channel, data) => {
+        ipcRenderer.send(channel, data);
+    },
+    invoke: (channel, data) => {
+        return ipcRenderer.invoke(channel, data);
+    },
 });
